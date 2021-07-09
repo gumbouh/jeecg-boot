@@ -46,6 +46,16 @@
 			<version>${jeecgboot.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.jeecgframework.boot</groupId>
+			<artifactId>jeecg-boot-module-bigproject</artifactId>
+			<version>${jeecgboot.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jeecgframework.boot</groupId>
+			<artifactId>jeecg-boot-module-test</artifactId>
+			<version>${jeecgboot.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.jeecgframework.jimureport</groupId>
 			<artifactId>spring-boot-starter-jimureport</artifactId>
 			<version>1.3.4-beta</version>
