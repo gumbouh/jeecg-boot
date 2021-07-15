@@ -9,10 +9,13 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.poi.hwpf.converter.PicturesManager;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.modules.demo.gumbo.entity.Picture;
+import org.jeecg.modules.demo.gumbo.mapper.PictureMapper;
 import org.jeecg.modules.demo.gumbo.service.IPictureService;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -49,7 +52,8 @@ import org.jeecg.common.aspect.annotation.AutoLog;
 public class PictureController extends JeecgController<Picture, IPictureService> {
 	@Autowired
 	private IPictureService pictureService;
-	
+	@Autowired
+	private PictureMapper pictureMapper;
 	/**
 	 * 分页列表查询
 	 *
@@ -163,9 +167,47 @@ public class PictureController extends JeecgController<Picture, IPictureService>
     * @param response
     * @return
     */
+	@AutoLog(value = "picture-通过excel导入数据")
+	@ApiOperation(value="picture-通过excel导入数据", notes="picture-通过excel导入数据")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, Picture.class);
     }
 
+	 /**
+	  * 根据名称和可用性分页查询
+	  * @param isUsability
+	  * @param pageNo
+	  * @param pageSize
+	  * @return
+	  */
+	 @AutoLog(value = "picture-通过名称和可用性查询")
+	 @ApiOperation(value="picture-通过名称和可用性查询", notes="picture-通过名称和可用性查询")
+	 @GetMapping(value = "/queryByUsability")
+    public Result<?> queryByUsability(@RequestParam(name="usability",required=true) String isUsability,
+									  @RequestParam(name="name",required=true) String name,
+									  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+									  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize){
+    	int usability = 0;
+    	//将传进来的可用性转换成0或1
+		switch (isUsability){
+			case "可用":
+				usability = 1;
+				break;
+			case "所有":
+				usability = -1;
+				break;
+		}
+		QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
+		queryWrapper.like("name",name).eq("usability", usability);
+		Page<Picture> page = new Page<Picture>(pageNo, pageSize);
+		//如果可用性为所有且名称为空,返回全部
+		if(usability==-1 && name==null){
+			queryWrapper.or().gt("usability",usability);
+		}else if(usability==-1 && name!=null){
+			queryWrapper.or().like("name",name);
+		}
+		IPage<Picture> picturePage = pictureMapper.selectPage(page, queryWrapper);
+		return Result.OK(picturePage);
+	}
 }
